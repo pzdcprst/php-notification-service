@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateReminderRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class UpdateReminderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() !== null;
     }
 
     /**
@@ -23,7 +24,14 @@ class UpdateReminderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'event_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::exists('events', 'id')->where('user_id', $this->user()->id),
+            ],
+            'remind_at' => ['sometimes', 'required', 'date'],
+            'channel' => ['sometimes', 'required', Rule::in(['telegram', 'database'])],
         ];
     }
 }

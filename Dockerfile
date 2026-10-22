@@ -1,3 +1,14 @@
+FROM node:22-alpine AS assets
+
+WORKDIR /build
+
+COPY package.json vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+
+RUN npm install --no-audit --no-fund \
+    && npm run build
+
 FROM php:8.5-cli
 
 RUN apt-get update \
@@ -15,6 +26,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY . .
+
+COPY --from=assets /build/public/build ./public/build
 
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
     && mkdir -p \

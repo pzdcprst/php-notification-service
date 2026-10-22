@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateImportantDateRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class UpdateImportantDateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() !== null;
     }
 
     /**
@@ -23,7 +24,15 @@ class UpdateImportantDateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'contact_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::exists('contacts', 'id')->where('user_id', $this->user()->id),
+            ],
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'date' => ['sometimes', 'required', 'date_format:Y-m-d'],
+            'repeat_yearly' => ['sometimes', 'boolean'],
         ];
     }
 }
