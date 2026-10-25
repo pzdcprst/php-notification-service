@@ -13,9 +13,12 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
+
+    /** 
+     * TODO: реализовать поиск контактов (и других крудов) через сервис (query-параметром)
+     * Реализовано: на теккущей странице на стороне пользователя
      */
+
     public function index(Request $request): AnonymousResourceCollection
     {
         return ContactResource::collection(
@@ -23,9 +26,6 @@ class ContactController extends Controller
         );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreContactRequest $request): JsonResponse
     {
         $contact = $request->user()->contacts()->create($request->validated());
@@ -33,9 +33,6 @@ class ContactController extends Controller
         return ContactResource::make($contact)->response()->setStatusCode(201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Request $request, Contact $contact): ContactResource
     {
         return ContactResource::make(
@@ -43,9 +40,6 @@ class ContactController extends Controller
         );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateContactRequest $request, Contact $contact): ContactResource
     {
         $contact = $request->user()->contacts()->findOrFail($contact->getKey());
@@ -54,9 +48,6 @@ class ContactController extends Controller
         return ContactResource::make($contact->refresh());
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Request $request, Contact $contact): JsonResponse
     {
         $request->user()->contacts()->findOrFail($contact->getKey())->delete();
