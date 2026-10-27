@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Telegram\CreateTelegramLinkAction;
 use App\Http\Controllers\Controller;
+use App\Services\TelegramBot;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class TelegramSettingsController extends Controller
 {
+    public function __construct(
+        private readonly CreateTelegramLinkAction $createTelegramLinkAction,
+    ) {}
+
     public function show(Request $request): View
     {
         return view('settings.telegram', ['user' => $request->user()]);
@@ -17,22 +22,9 @@ class TelegramSettingsController extends Controller
 
     public function createLink(Request $request): RedirectResponse
     {
-        $botUsername = config('services.telegram.bot_username');
+        $link = $this->createTelegramLinkAction->execute($request->user());
 
-        if (! is_string($botUsername) || $botUsername === '') {
-            return to_route('settings.telegram')->withErrors([
-                'telegram' => 'Бот еще не настроен. Укажите TELEGRAM_BOT_USERNAME.',
-            ]);
-        }
-
-        $plainToken = Str::random(48);
-
-        $request->user()->forceFill([
-            'telegram_link_token' => hash('sha256', $plainToken),
-            'telegram_link_expires_at' => now()->addMinutes(15),
-        ])->save();
-
-        return to_route('settings.telegram')->with('telegramLink', "https://t.me/{$botUsername}?start={$plainToken}");
+        return to_route('settings.telegram')->with('telegramLink', $link);
     }
 
     public function disconnect(Request $request): RedirectResponse

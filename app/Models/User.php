@@ -44,6 +44,14 @@ class User extends Authenticatable
         return $this->telegram_chat_id !== null;
     }
 
+    public function issueTelegramLinkToken(string $plainToken, int $ttlMinutes = 15): void
+    {
+        $this->forceFill([
+            'telegram_link_token' => hash('sha256', $plainToken),
+            'telegram_link_expires_at' => now()->addMinutes($ttlMinutes),
+        ])->save();
+    }
+
     /**
      * Get the attributes that should be cast.
      *
